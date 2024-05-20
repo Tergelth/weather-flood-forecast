@@ -1,0 +1,150 @@
+  {% load static %}
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"/>
+      <link rel="stylesheet" href="{% static 'css/style.css' %}">
+      <title>Flood Forecast</title>
+    </head>
+    <body>
+      <section id="section1" class="section">
+            <div class="rain front-row"></div>
+            <div class="rain back-row"></div>
+            <div class="real_time">
+              {% for weather in weather_today %}
+              <p class="today_date">{{ weather.time_today }}</p>
+              <div class="weather_details">
+                <div class="left_details">
+                  <div>
+                    <p class="today_info">{{ weather.temp_today }}°C</p>
+                    <p class="today_info">{{ weather.description_today }}</p>
+                  </div>
+                  <div>
+                    <img
+                      src="http://openweathermap.org/img/wn/{{ weather.icon_today }}.png"
+                      alt="Weather Icon"
+                      style="transform: scale(2)"
+                    />
+                  </div>
+                </div>
+                <div class="right_details">
+                  <p class="today_info">{{ weather.humidity_today }}%</p>
+                  <p class="today_info">{{ weather.pressure_today }}PS</p>
+                </div>
+              </div>
+    
+              {% endfor %}
+            </div>
+            <div class="item-container">
+              {% for weather in weather_data %}
+              <div class="item">
+                <p class="weather_date">{{ weather.time }}</p>
+                <div style="display: flex; align-items: center;">
+                  <div>
+                    <p class="weather_info">{{ weather.temp }}°C</p>
+                    <p class="weather_info">{{ weather.description }}</p>
+                  </div>
+                  <div style="margin-left: auto;">
+                    <img
+                      src="http://openweathermap.org/img/wn/{{ weather.icon }}.png"
+                      alt="Weather Icon"
+                      style="transform: scale(2)"
+                    />
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+        <!-- </div> -->
+      </section>
+      <section id="section2">
+        <!-- <div class="header"> -->
+          <!--Content before waves-->
+          <div class="inner-header flex">
+            <h1 class="flood-section">River water estimator</h1>
+          <div class="white-box">
+            <form method="post" action="">
+              {% csrf_token %}
+              <div class="form-group">
+                <label for="river">Select River:</label>
+                <select id="river" name="river" required>
+                  <option value="river - Tuul" {% if selected_river == "river - Tuul" %}selected{% endif %}>Tuul River</option>
+                  <option value="river - Selbe" {% if selected_river == "river - Selbe" %}selected{% endif %}>Selbe River</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="date">Select Start Date:</label>
+                <input type="text" id="date" name="date" value="{{ selected_date }}" required />
+              </div>
+              <button type="submit">Forecast</button>
+            </form>
+            {% if forecasted_values %}
+            <h3>Forecasted River Level</h3>
+            <p class="for_value">{{ forecasted_values }}</p>
+            {% endif %}
+            {% if error_message %}
+            <p class="error">{{ error_message }}</p>
+            {% endif %}
+          </div>
+          
+        </div>
+        <div>
+          <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+          viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+          <defs>
+          <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+          </defs>
+          <g class="parallax">
+          <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+          <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+          <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+          <use xlink:href="#gentle-wave" x="48" y="7" fill="#fff" />
+          </g>
+          </svg>
+          </div>
+        <div class="content2 flex">
+        </div>
+      </section>
+      
+
+      <script>
+        flatpickr("#date", {
+          dateFormat: "Y-m-d",
+        });
+      </script>
+      <script>
+        var makeItRain = function() {
+        //clear out everything
+        document.querySelectorAll('.rain').forEach(el => el.innerHTML = '');
+
+        var increment = 0;
+        var drops = "";
+        var backDrops = "";
+
+        while (increment < 100) {
+          var randoHundo = (Math.floor(Math.random() * (98 - 1 + 1) + 1));
+          var randoFiver = (Math.floor(Math.random() * (5 - 2 + 1) + 2));
+          increment += randoFiver;
+          drops += `<div class="drop" style="left: ${increment}%; bottom: ${(randoFiver + randoFiver - 1 + 100)}%; animation-delay: 0.${randoHundo}s; animation-duration: 0.5${randoHundo}s;"><div class="stem" style="animation-delay: 0.${randoHundo}s; animation-duration: 0.5${randoHundo}s;"></div><div class="splat" style="animation-delay: 0.${randoHundo}s; animation-duration: 0.5${randoHundo}s;"></div></div>`;
+          backDrops += `<div class="drop" style="right: ${increment}%; bottom: ${(randoFiver + randoFiver - 1 + 100)}%; animation-delay: 0.${randoHundo}s; animation-duration: 0.5${randoHundo}s;"><div class="stem" style="animation-delay: 0.${randoHundo}s; animation-duration: 0.5${randoHundo}s;"></div><div class="splat" style="animation-delay: 0.${randoHundo}s; animation-duration: 0.5${randoHundo}s;"></div></div>`;
+        }
+
+        document.querySelector('.rain.front-row').innerHTML = drops;
+        document.querySelector('.rain.back-row').innerHTML = backDrops;
+      }
+
+      makeItRain();
+        </script>
+      <script>
+        // document.addEventListener("DOMContentLoaded", function () {
+        //   var section1 = document.getElementById("section1");
+        //   if (section1) {
+        //     section1.scrollIntoView({ behavior: "smooth", block: "start" });
+        //   }
+        // });
+
+      </script>
+    </body>
+  </html>
