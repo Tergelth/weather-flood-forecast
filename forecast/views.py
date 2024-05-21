@@ -55,7 +55,6 @@ def forecast_river_level(river, date, var_model_file, poly_model_file, poly_feat
         results_var = joblib.load(var_model_path)
     poly_model = joblib.load(poly_model_path)
     poly_features = joblib.load(poly_features_path)
-
     df_var = pd.read_csv(os.path.join(settings.MEDIA_ROOT, 'data(eng).csv')).iloc[:87]
     df_var.set_index('number', inplace=True)
     df_var.index = pd.date_range(start='2017-01-01', periods=len(df_var), freq='MS')
@@ -64,7 +63,7 @@ def forecast_river_level(river, date, var_model_file, poly_model_file, poly_feat
     X_var = df_var.drop(columns=river)
 
     last_date_in_data = df_var.index[-1]
-    start_date = datetime.strptime(date, '%Y-%m-%d')
+    start_date = datetime.strptime(date, '%Y-%m')
 
     N = (start_date.year - last_date_in_data.year) * 12 + (start_date.month - last_date_in_data.month)
 
@@ -105,77 +104,12 @@ def forecast_river_level(river, date, var_model_file, poly_model_file, poly_feat
 
     return df_var, forecast_df, last_predicted_features, last_predicted_river_level
 
-
-# def index(request):
-#     last_predicted_features = None
-#     last_predicted_river_level = None
-#     error_message = None
-
-#     if request.method == "POST":
-#         river = request.POST.get("river")
-#         date = request.POST.get("date")
-
-#         var_model_file = "var_model.pkl"
-#         poly_model_file = "poly_model.pkl"
-#         poly_features_file = "poly_features.pkl"
-
-#         try:
-#             train_and_save_models(3, river, 'var_model.pkl', 'poly_model.pkl', 'poly_features.pkl')
-#             df_var, forecast_df, last_predicted_features, last_predicted_river_level = forecast_river_level(river, date, 'var_model.pkl', 'poly_model.pkl', 'poly_features.pkl')
-#         except ValueError as e:
-#             error_message = str(e)
-
-#     url = 'https://api.openweathermap.org/data/2.5/forecast'
-#     params = {
-#         'lat': 47.9077,
-#         'lon': 106.8832,
-#         'units': 'metric',
-#         'appid': 'b61f845d06d23e8687922bce32020947'
-#     }
-
-#     response = requests.get(url, params=params)
-#     data = response.json()
-#     today = datetime.today().date()
-
-#     weather_data = []
-#     weather_today = []
-#     for weather in data['list']:
-#         dt_txt = datetime.strptime(weather['dt_txt'], "%Y-%m-%d %H:%M:%S")
-#         dt_date = dt_txt.date()
-#         month_name = calendar.month_name[dt_txt.month]
-#         date = f"{month_name} {dt_txt.day}"
-#         if dt_txt.hour == 15:
-#             weather_data.append({
-#                 'temp': weather['main']['temp'],
-#                 'description': weather['weather'][0]['description'],
-#                 'icon': weather['weather'][0]['icon'],
-#                 'time': date,
-#                 'humidity': weather['main']['humidity'],
-#                 'pressure': weather['main']['pressure'],
-#             })
-#         if dt_date == today and len(weather_today) < 1:
-#             weather_today.append({
-#                 'temp_today': weather['main']['temp'],
-#                 'description_today': weather['weather'][0]['description'],
-#                 'icon_today': weather['weather'][0]['icon'],
-#                 'time_today': date,
-#                 'humidity_today': weather['main']['humidity'],
-#                 'pressure_today': weather['main']['pressure'],
-#             })
-
-#     return render(request, 'index.html', {
-#         'forecasted_values': last_predicted_river_level,
-#         'error_message': error_message,
-#         'weather_data': weather_data,
-#         'weather_today': weather_today,
-#     })
-
 def index(request):
     last_predicted_features = None
     last_predicted_river_level = None
     error_message = None
     river = None
-    date = 0
+    date = None
 
     if request.method == "POST":
         river = request.POST.get("river")
