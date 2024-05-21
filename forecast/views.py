@@ -104,6 +104,7 @@ def forecast_river_level(river, date, var_model_file, poly_model_file, poly_feat
 
     return df_var, forecast_df, last_predicted_features, last_predicted_river_level
 
+
 def index(request):
     last_predicted_features = None
     last_predicted_river_level = None
@@ -115,15 +116,18 @@ def index(request):
         river = request.POST.get("river")
         date = request.POST.get("date")
 
-        var_model_file = "var_model.pkl"
-        poly_model_file = "poly_model.pkl"
-        poly_features_file = "poly_features.pkl"
+        if not date:
+            error_message = "Please select a date."
+        else:
+            var_model_file = "var_model.pkl"
+            poly_model_file = "poly_model.pkl"
+            poly_features_file = "poly_features.pkl"
 
-        try:
-            train_and_save_models(3, river, var_model_file, poly_model_file, poly_features_file)
-            df_var, forecast_df, last_predicted_features, last_predicted_river_level = forecast_river_level(river, date, var_model_file, poly_model_file, poly_features_file)
-        except ValueError as e:
-            error_message = str(e)
+            try:
+                train_and_save_models(3, river, var_model_file, poly_model_file, poly_features_file)
+                df_var, forecast_df, last_predicted_features, last_predicted_river_level = forecast_river_level(river, date, var_model_file, poly_model_file, poly_features_file)
+            except ValueError as e:
+                error_message = str(e)
 
     url = 'https://api.openweathermap.org/data/2.5/forecast'
     params = {
