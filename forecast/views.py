@@ -15,6 +15,12 @@ from django.shortcuts import render, HttpResponse
 import requests
 import calendar
 
+
+RIVER_THRESHOLDS = {
+    'river - Tuul': 280,
+    'river - Selbe': 120
+}
+
 def train_and_save_models(N, river, var_model_file, poly_model_file, poly_features_file):
     df_var = pd.read_csv(os.path.join(settings.MEDIA_ROOT, 'data(eng).csv')).iloc[:87]
     df_var.set_index('number', inplace=True)
@@ -82,7 +88,7 @@ def forecast_river_level(river, date, var_model_file, poly_model_file, poly_feat
             forecast_value = lr_model.predict(X_var_train[-1].values.reshape(1, -1))
             forecast_var.append(forecast_value[0])
             new_row = X_var_train[-1:].copy()
-            new_row.iloc[0, 0] += 1  # Increment month or other logic to simulate future data
+            new_row.iloc[0, 0] += 1 
             X_var_train = pd.concat([X_var_train[1:], new_row])
         forecast_df = pd.DataFrame(forecast_var, columns=[river])
 
@@ -97,10 +103,12 @@ def forecast_river_level(river, date, var_model_file, poly_model_file, poly_feat
 
     forecasted_river_level = poly_model.predict(forecast_poly_input_poly)
 
-    forecast_df[f'forecasted {river}'] = forecasted_river_level
+    # forecast_df[f'forecasted {river}'] = forecasted_river_level
+    forecast_df[f'forecasted {river}'] = [round(level, 2) for level in forecasted_river_level]
 
     last_predicted_features = forecast_df.iloc[-1][['temperature', 'precipitation', 'dew point', 'humidity']].to_dict()
-    last_predicted_river_level = forecast_df[f'forecasted {river}'].iloc[-1]
+    # last_predicted_river_level = forecast_df[f'forecasted {river}'].iloc[-1]
+    last_predicted_river_level = round(forecast_df[f'forecasted {river}'].iloc[-1], 2)
 
     return df_var, forecast_df, last_predicted_features, last_predicted_river_level
 
@@ -111,6 +119,7 @@ def index(request):
     error_message = None
     river = None
     date = None
+    flood_message = None
 
     if request.method == "POST":
         river = request.POST.get("river")
@@ -126,6 +135,12 @@ def index(request):
             try:
                 train_and_save_models(3, river, var_model_file, poly_model_file, poly_features_file)
                 df_var, forecast_df, last_predicted_features, last_predicted_river_level = forecast_river_level(river, date, var_model_file, poly_model_file, poly_features_file)
+                
+                threshold = RIVER_THRESHOLDS.get(river)
+                if last_predicted_river_level > threshold:
+                    flood_message = "Flood occurrence likely"
+                else:
+                    flood_message = "Safe from flood"
             except ValueError as e:
                 error_message = str(e)
 
@@ -169,6 +184,7 @@ def index(request):
 
     return render(request, 'index.html', {
         'forecasted_values': last_predicted_river_level,
+        'flood_message': flood_message,
         'error_message': error_message,
         'weather_data': weather_data,
         'weather_today': weather_today,
