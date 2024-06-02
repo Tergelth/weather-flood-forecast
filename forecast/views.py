@@ -138,7 +138,7 @@ def index(request):
                 
                 threshold = RIVER_THRESHOLDS.get(river)
                 if last_predicted_river_level > threshold:
-                    flood_message = "Flood occurrence likely"
+                    flood_message = "Flood occurrence likely!"
                 else:
                     flood_message = "Safe from flood"
             except ValueError as e:

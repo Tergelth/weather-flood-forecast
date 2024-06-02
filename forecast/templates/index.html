@@ -18,17 +18,23 @@
       {% for weather in weather_today %}
       <p class="today_date">{{ weather.time_today }}</p>
       <div class="weather_details">
-        <div class="left_details">
-          <div>
-            <p class="today_info">{{ weather.temp_today }}°C</p>
-            <p class="today_info">{{ weather.description_today }}</p>
-          </div>
-        </div>
-        <div class="right_details">
-          <p class="today_info">{{ weather.humidity_today }}%</p>
-          <p class="today_info">{{ weather.pressure_today }}PS</p>
-        </div>
-      </div>
+        <p class="today_info">{{ weather.description_today }}</p>
+        <table >
+          <tr>
+            <td style="padding-right: 15px;"><img src="../static/img/temperature_30.png"/></td>
+            <td class="today_info">{{ weather.temp_today }}°C</td>
+          </tr>
+          <tr>
+            <td style="padding-right: 15px;"><img src="../static/img/humidity_30.png"/></td>
+            <td><p class="today_info">{{ weather.humidity_today }}%</p></td>
+          </tr>
+          <tr>
+            <td style="padding-right: 15px;"><img src="../static/img/pressure_30.png"/></td>
+            <td><p class="today_info">{{ weather.pressure_today }}PS</p></td>
+          </tr>
+        </table>
+        
+        
       {% endfor %}
     </div>
     <div class="item-container">
